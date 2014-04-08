@@ -1,0 +1,8 @@
+export(desig_city_codes)
+export(extract_prefectures)
+export(lookup_codes)
+export(lookup_details)
+export(lookup_names)
+export(prefecture_codes)
+importFrom(SPARQL,SPARQL)
+importFrom(plyr,rbind.fill)

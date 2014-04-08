@@ -1,0 +1,19 @@
+Package: jlocalitycodes
+Title: Japanese locality codes
+Description: Access the National Statistics Centre (NSTAC) public
+    database of standard Japanese local administrative area
+    codes, also known as JIS prefecture and municipality
+    codes, directly from R. Get information on changes in the
+    coding (via municipal mergers and boundary changes, etc)
+    since 1970. Note: the author of this package is not
+    affiliated with or authorized by NSTAC in any way.
+Version: 0.1
+Author: Mikael Bourqui <bourqui@struct.re>
+Maintainer: Mikael Bourqui <bourqui@struct.re>
+Depends:
+    R (>= 3.0.3),
+    SPARQL
+Imports:
+    plyr
+License: GPL (>= 2)
+LazyData: true
