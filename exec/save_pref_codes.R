@@ -31,6 +31,7 @@ query <- paste("SELECT ?code ?label",
 result <- (SPARQL(endpoint, query, curl_args=list(.encoding="UTF-8")))$result
 output <- split_langs(result)
 output$code <- sub('000', '', output$code)
+rownames(output) <- NULL
 
 saveRDS(object=output, file="inst/extdata/prefectures.rds")
 

@@ -1,9 +1,9 @@
-\name{subunit_codes}
-\alias{subunit_codes}
-\title{Get information on all sub-units of a locality}
+\name{subunit_codes_only}
+\alias{subunit_codes_only}
+\title{Get numeric codes for all sub-units of a locality}
 \usage{
-subunit_codes(code, date = Sys.Date(), class = NULL, sub.prefs = FALSE,
-  lang = "ja")
+subunit_codes_only(code, date = Sys.Date(), class = NULL,
+  sub.prefs = FALSE)
 }
 \arguments{
   \item{code}{A single JIS prefecture or municipality
@@ -17,14 +17,11 @@ subunit_codes(code, date = Sys.Date(), class = NULL, sub.prefs = FALSE,
   \item{sub.prefs}{Logical. Whether to include
   sub-prefectures (shichou, shinkoukyoku) in the search.
   They are excluded by default.}
-
-  \item{lang}{ISO language code (for a list of valid
-  options, call the function with a nonsense value)}
 }
 \value{
-A data frame.
+A vector.
 }
 \description{
-Get information on all sub-units of a locality
+Get numeric codes for all sub-units of a locality
 }
 

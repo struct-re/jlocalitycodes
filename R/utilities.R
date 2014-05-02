@@ -4,6 +4,21 @@ endpoint <- "http://statdb.nstac.go.jp/lod/sparql"
 
 .jlc_cache <- new.env()
 
+insert_col_at <- function(df, index, x, name) {
+    stopifnot(index <= ncol(df) + 1)
+    newdf = df
+    old.names = names(df)
+    new.name = name; i = 1;
+    while(new.name %in% old.names) {
+        new.name = paste(name, i, sep = ".")
+        i = i + 1
+    }
+    newdf[[new.name]] = x
+    new.names = append(old.names, new.name, after = (index - 1))
+
+    newdf[, new.names]
+}
+
 cached <- function(key, generator) {
     if (!exists(key, envir = .jlc_cache)) {
         value <- do.call(generator, list())
@@ -14,8 +29,7 @@ cached <- function(key, generator) {
 }
 
 is_valid_code <- function(code) {
-    (length(grep("^\\d+$", code)) > 0) &
-        (nchar(code) == 5 | (nchar(code) == 2 & as.numeric(code) <= 47))
+    is_valid_jlocalitycode(code)
 }
 
 is_valid_class <- function(class) {
@@ -26,25 +40,39 @@ is_valid_class <- function(class) {
                      'AdministrativeDivision'))
 }
 
-nstac_sparql_split_langs <- function(df, col.name) {
-    ## select only one row of the non-label data
-    output <- df[grep("@ja$", df[, col.name]), ]
-    ## `output$col` now contains only one arbitrarily-chosen
-    ## language, but we don't drop it yet else the data.frame
-    ## collapses into a vector when `code` is the only other column
-
-    ## Now separate the labels by language
-    for (lang.tag in c("ja", "en", "ja-hrkt")) {
-        col.name.new  <- paste(col.name, lang.tag, sep=".")
-        indexes       <- grep(paste0(lang.tag, '$'), df[, col.name])
-        if (length(indexes) == nrow(output)) {
-            name.data <- strip_lang_tagging(df[indexes, col.name])
-            output[[col.name.new]] <- name.data
+nstac_sparql_split_langs <- function(df, col.names) {
+    old.col.names = names(df)
+    unchanged.cols = old.col.names[!(old.col.names %in% col.names)]
+    newdf = df
+    N = ncol(df)
+    for (c in col.names) {
+        i = which(old.col.names == c)
+        if (length(i) != 1) stop('Column name not found or ambiguous: ', c)
+        langs   = unique(extract_lang_tags(df[, c]))
+        nnotNA  = sum(!is.na(df[, c]))
+        nlangs  = length(langs)
+        if (nnotNA > 0) {
+            if (nlangs < 1)
+                stop(paste0(c, 'has zero language-tagged elements.'))
+            if ((nnotNA %% nlangs) != 0)
+                stop(paste0('The number of non-NA elements of ', c, ' is not a multiple of the number of languages ', length(langs), '!'))
+            j = i
+            for (l in langs) {
+                select = is.na(df[, c]) | grepl(paste0("@", l, "$"), df[, c])
+                ## only true on the first iteration
+                if (nrow(newdf) > sum(select)) newdf <- df[select, ]
+                newvec = strip_lang_tagging(df[select, c])
+                newdf = insert_col_at(newdf, j, newvec, name = paste(c, l, sep = "."))
+                j = j + 1
+            }
         }
+        newdf[, c] <- NULL
     }
-    output[, col.name] <- NULL
-
-    output
+    row.names(newdf) <- NULL
+    if (length(setdiff(unique(df[, unchanged.cols]), unique(newdf[, unchanged.cols]))) != 0) {
+        warning("Data loss occurred while splitting languages!")
+    }
+    newdf
 }
 
 strip_sacs_namespace <- function(str) {
@@ -53,6 +81,11 @@ strip_sacs_namespace <- function(str) {
 
 strip_lang_tagging <- function(str) {
     gsub("(\"|@[-A-Za-z]+$)", "", str)
+}
+
+extract_lang_tags <- function(str) {
+    res = gsub("@", "", gsub("^[^@]+|\"", "", str), fixed = T)
+    res[!is.na(res)]
 }
 
 paste00 <- function(..., collapse = NULL, na.rm = TRUE) {

@@ -7,7 +7,7 @@ Description: Access the National Statistics Centre (NSTAC) public
     coding (via municipal mergers and boundary changes, etc)
     since 1970. Note: the author of this package is not
     affiliated with or authorized by NSTAC in any way.
-Version: 0.1
+Version: 0.2
 Author: Mikael Bourqui <bourqui@struct.re>
 Maintainer: Mikael Bourqui <bourqui@struct.re>
 Depends:
